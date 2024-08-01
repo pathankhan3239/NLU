@@ -28,8 +28,8 @@ if st.button("Analyze"):
 
     # Explain the result using SHAP
     explainer = shap.Explainer(predict, tokenizer)
-    shap_values = explainer([user_input])
+    shap_values = explainer([user_input], check_additivity=False)
 
     st.write("Explanation:")
-    st_shap = shap.plots.text(shap_values[0], display=False)
-    st.pyplot(st_shap)
+    shap_text = shap.plots.text(shap_values[0])
+    st.pyplot(shap_text)
