@@ -2,6 +2,7 @@ import streamlit as st
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import shap
 import torch
+import matplotlib.pyplot as plt
 
 # Load pre-trained sentiment analysis model and tokenizer
 model_name = "roberta-large-mnli"
@@ -32,9 +33,9 @@ if st.button("Analyze"):
     st.write(f"Sentiment: {sentiment}, Score: {score:.4f}")
 
     # Explain the result using SHAP
-    explainer = shap.Explainer(shap_predict, tokenizer)
+    explainer = shap.Explainer(shap_predict)
     shap_values = explainer([user_input])
 
     st.write("Explanation:")
-    st_shap = shap.plots.text(shap_values[0])
-    st.pyplot(st_shap)
+    fig = shap.plots.text(shap_values[0])
+    st.pyplot(fig)
