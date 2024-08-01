@@ -1,15 +1,16 @@
 import streamlit as st
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 import shap
+import torch
 
 # Load pre-trained sentiment analysis model and tokenizer
 model_name = "roberta-large-mnli"
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+classifier = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
 # Function to make predictions
-def predict(texts):
+def predict_proba(texts):
     inputs = tokenizer(texts, return_tensors='pt', padding=True, truncation=True)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -21,14 +22,12 @@ user_input = st.text_area("Enter a review:")
 
 if st.button("Analyze"):
     # Get sentiment analysis result
-    prediction = predict([user_input])[0]
-    sentiment = "POSITIVE" if prediction[1] > prediction[0] else "NEGATIVE"
-    score = max(prediction)
-    st.write(f"Sentiment: {sentiment}, Score: {score:.4f}")
+    prediction = classifier(user_input)[0]
+    st.write(f"Sentiment: {prediction['label']}, Score: {prediction['score']:.4f}")
 
     # Explain the result using SHAP
-    explainer = shap.Explainer(predict, tokenizer)
-    shap_values = explainer([user_input], check_additivity=False)
+    explainer = shap.Explainer(predict_proba, tokenizer)
+    shap_values = explainer([user_input])
 
     st.write("Explanation:")
     shap_text = shap.plots.text(shap_values[0])
