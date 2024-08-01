@@ -1,5 +1,5 @@
 import streamlit as st
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 import shap
 import torch
 import numpy as np
@@ -8,6 +8,7 @@ import numpy as np
 model_name = "roberta-large-mnli"
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+classifier = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
 # Function to make predictions
 def predict_proba(texts):
@@ -16,16 +17,8 @@ def predict_proba(texts):
         outputs = model(**inputs)
     return torch.nn.functional.softmax(outputs.logits, dim=1).numpy()
 
-# SHAP requires a function that accepts raw text and returns predictions
-def shap_predict(texts):
-    predictions = predict_proba(texts)
-    return predictions
-
-# Define a masker function
-def masker(input_strings):
-    encoded_inputs = tokenizer(input_strings, return_tensors='pt', padding=True, truncation=True)
-    attention_mask = encoded_inputs['attention_mask'].numpy()
-    return attention_mask
+# SHAP explainer initialization
+explainer = shap.Explainer(predict_proba, masker=shap.maskers.Text(tokenizer))
 
 # Set up Streamlit app
 st.title("Advanced Sentiment Analysis Tool")
@@ -33,15 +26,12 @@ user_input = st.text_area("Enter a review:")
 
 if st.button("Analyze"):
     # Get sentiment analysis result
-    prediction = shap_predict([user_input])[0]
-    sentiment = "POSITIVE" if prediction[2] > max(prediction[0], prediction[1]) else "NEGATIVE"
-    score = max(prediction)
-    st.write(f"Sentiment: {sentiment}, Score: {score:.4f}")
+    prediction = classifier(user_input)[0]
+    st.write(f"Sentiment: {prediction['label']}, Score: {prediction['score']:.4f}")
 
     # Explain the result using SHAP
-    explainer = shap.Explainer(shap_predict, masker)
     shap_values = explainer([user_input])
 
     st.write("Explanation:")
-    fig = shap.plots.text(shap_values[0])
-    st.pyplot(fig)
+    st_shap = shap.plots.text(shap_values[0])
+    st.pyplot(st_shap)
