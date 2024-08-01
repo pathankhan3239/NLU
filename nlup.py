@@ -2,7 +2,7 @@ import streamlit as st
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import shap
 import torch
-import matplotlib.pyplot as plt
+import numpy as np
 
 # Load pre-trained sentiment analysis model and tokenizer
 model_name = "roberta-large-mnli"
@@ -21,6 +21,12 @@ def shap_predict(texts):
     predictions = predict_proba(texts)
     return predictions
 
+# Define a masker function
+def masker(input_strings):
+    encoded_inputs = tokenizer(input_strings, return_tensors='pt', padding=True, truncation=True)
+    attention_mask = encoded_inputs['attention_mask'].numpy()
+    return attention_mask
+
 # Set up Streamlit app
 st.title("Advanced Sentiment Analysis Tool")
 user_input = st.text_area("Enter a review:")
@@ -33,7 +39,7 @@ if st.button("Analyze"):
     st.write(f"Sentiment: {sentiment}, Score: {score:.4f}")
 
     # Explain the result using SHAP
-    explainer = shap.Explainer(shap_predict)
+    explainer = shap.Explainer(shap_predict, masker)
     shap_values = explainer([user_input])
 
     st.write("Explanation:")
