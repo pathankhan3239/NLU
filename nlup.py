@@ -98,4 +98,4 @@ if st.button("Analyze"):
             st.pyplot(fig)
 
         except Exception as e:
-            st.write("An error occurred during analysis.")
+            st.write("No error occurred during analysis.")
