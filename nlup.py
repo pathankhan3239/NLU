@@ -40,20 +40,28 @@ if st.button("Analyze"):
 
             # Get sentiment analysis result
             prediction = classifier(input_list, candidate_labels=labels)
-            st.write(f"**Label:** {prediction['labels'][0]}, **Score:** {prediction['scores'][0]:.4f}")
+
+            # Ensure prediction is in the expected format
+            st.write(f"Prediction output: {prediction}")
+
+            # Extract label and score from prediction
+            prediction_label = prediction['labels'][0]
+            prediction_score = prediction['scores'][0]
+
+            st.write(f"**Label:** {prediction_label}, **Score:** {prediction_score:.4f}")
 
             # Show detailed probabilities for all labels
-            st.write("**Detailed Scores:**")
             scores_df = pd.DataFrame({
                 "Label": prediction['labels'],
                 "Score": prediction['scores']
             })
+            st.write("**Detailed Scores:**")
             st.write(scores_df)
 
             # Store the input and prediction in history
             st.session_state['history'].append({
                 "Input": user_input,
-                "Prediction": prediction['labels'][0],
+                "Prediction": prediction_label,
                 "Scores": prediction['scores']
             })
 
@@ -74,10 +82,8 @@ if st.button("Analyze"):
             st.altair_chart(chart)
 
             # Explain the result using SHAP
-            # Create a simple wrapper function for SHAP
             def shap_predict(texts):
-                probs = predict_proba(texts)
-                return probs
+                return predict_proba(texts)
 
             masker = shap.maskers.Text(tokenizer)
             explainer = shap.Explainer(shap_predict, masker)
