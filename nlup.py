@@ -11,7 +11,9 @@ classifier = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
 # Function to make predictions
 def predict_proba(texts):
-    # Tokenization and tensor preparation
+    # Ensure texts is a list
+    if isinstance(texts, str):
+        texts = [texts]
     inputs = tokenizer(texts, return_tensors='pt', padding=True, truncation=True)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -35,6 +37,7 @@ if st.button("Analyze"):
             st.write(f"Sentiment: {prediction['label']}, Score: {prediction['score']:.4f}")
 
             # Explain the result using SHAP
+            # Ensure user_input is wrapped in a list
             shap_values = explainer([user_input])
 
             st.write("Explanation:")
