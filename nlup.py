@@ -71,11 +71,13 @@ if st.button("Analyze"):
             st.altair_chart(chart)
 
             # Explain the result using SHAP
-            explainer = shap.Explainer(predict_proba, tokenizer)
-            shap_values = explainer([user_input], check_additivity=False)
+            masker = shap.maskers.Text(tokenizer)
+            explainer = shap.Explainer(predict_proba, masker)
+            shap_values = explainer([user_input])
+
             st.write("Explanation:")
-            shap_text = shap.plots.text(shap_values[0])
-            st.pyplot(shap_text)
+            fig = shap.plots.text(shap_values[0])
+            st.pyplot(fig)
 
         except Exception as e:
             st.write(f"Error: {e}")
