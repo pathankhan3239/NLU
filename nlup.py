@@ -87,6 +87,7 @@ if st.button("Analyze"):
             def shap_predict(texts):
                 return predict_proba(texts)
 
+            # Use shap.maskers.Text to wrap tokenizer
             masker = shap.maskers.Text(tokenizer)
             explainer = shap.Explainer(shap_predict, masker)
             shap_values = explainer(input_list)
@@ -97,4 +98,4 @@ if st.button("Analyze"):
             st.pyplot(fig)
 
         except Exception as e:
-            st.write(f"Error: {e}")
+            st.write("An error occurred during analysis.")
