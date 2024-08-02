@@ -33,5 +33,5 @@ if st.button("Analyze"):
     shap_values = explainer([user_input])
 
     st.write("Explanation:")
-    st_shap = shap.plots.text(shap_values[0])
-    st.pyplot(st_shap)
+    fig = shap.plots.text(shap_values[0])
+    st.pyplot(fig)
