@@ -30,12 +30,12 @@ if st.button("Analyze"):
             score = prediction['score']
 
             # Explain the result using SHAP
-            shap_values = explainer([user_input])
+            shap_values = explainer(user_input)  # Pass user_input directly
 
             # Display results
             st.write(f"Sentiment: {sentiment}, Score: {score:.4f}")
             st.write("Explanation:")
-            fig = shap.plots.text(shap_values[0])
+            fig = shap.plots.text(shap_values)
             st.pyplot(fig)
 
         except Exception as e:
