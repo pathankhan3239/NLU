@@ -3,4 +3,4 @@ transformers
 torch
 pandas
 altair
-numpy
+shap
