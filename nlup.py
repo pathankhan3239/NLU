@@ -46,9 +46,6 @@ if st.button("Analyze"):
             pred_labels = pred['labels']
             pred_scores = pred['scores']
 
-            # Ensure prediction is in the expected format
-            st.write(f"Prediction output: {pred}")
-
             # Extract label and score from prediction
             prediction_label = pred_labels[0]
             prediction_score = pred_scores[0]
