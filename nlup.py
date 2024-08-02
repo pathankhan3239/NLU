@@ -35,8 +35,11 @@ if st.button("Analyze"):
         st.write("Please enter a review.")
     else:
         try:
+            # Convert input to a list
+            input_list = [user_input]
+
             # Get sentiment analysis result
-            prediction = classifier(user_input, candidate_labels=labels)
+            prediction = classifier(input_list, candidate_labels=labels)
             st.write(f"**Label:** {prediction['labels'][0]}, **Score:** {prediction['scores'][0]:.4f}")
 
             # Show detailed probabilities for all labels
@@ -71,11 +74,17 @@ if st.button("Analyze"):
             st.altair_chart(chart)
 
             # Explain the result using SHAP
+            # Create a simple wrapper function for SHAP
+            def shap_predict(texts):
+                probs = predict_proba(texts)
+                return probs
+
             masker = shap.maskers.Text(tokenizer)
-            explainer = shap.Explainer(predict_proba, masker)
-            shap_values = explainer([user_input])
+            explainer = shap.Explainer(shap_predict, masker)
+            shap_values = explainer(input_list)
 
             st.write("Explanation:")
+            shap.initjs()
             fig = shap.plots.text(shap_values[0])
             st.pyplot(fig)
 
