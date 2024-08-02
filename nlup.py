@@ -41,19 +41,24 @@ if st.button("Analyze"):
             # Get sentiment analysis result
             prediction = classifier(input_list, candidate_labels=labels)
 
+            # Extract results from the prediction list
+            pred = prediction[0]
+            pred_labels = pred['labels']
+            pred_scores = pred['scores']
+
             # Ensure prediction is in the expected format
-            st.write(f"Prediction output: {prediction}")
+            st.write(f"Prediction output: {pred}")
 
             # Extract label and score from prediction
-            prediction_label = prediction['labels'][0]
-            prediction_score = prediction['scores'][0]
+            prediction_label = pred_labels[0]
+            prediction_score = pred_scores[0]
 
             st.write(f"**Label:** {prediction_label}, **Score:** {prediction_score:.4f}")
 
             # Show detailed probabilities for all labels
             scores_df = pd.DataFrame({
-                "Label": prediction['labels'],
-                "Score": prediction['scores']
+                "Label": pred_labels,
+                "Score": pred_scores
             })
             st.write("**Detailed Scores:**")
             st.write(scores_df)
@@ -62,7 +67,7 @@ if st.button("Analyze"):
             st.session_state['history'].append({
                 "Input": user_input,
                 "Prediction": prediction_label,
-                "Scores": prediction['scores']
+                "Scores": pred_scores
             })
 
             # Display the history
