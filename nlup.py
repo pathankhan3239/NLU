@@ -99,5 +99,4 @@ if st.button("Analyze"):
             fig = shap.plots.text(shap_values[0])
             st.pyplot(fig)
 
-        except Exception as e:
-            st.write(f"Error: {e}")
+        
