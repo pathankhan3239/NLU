@@ -1,5 +1,6 @@
 import streamlit as st
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+import shap
 import torch
 import pandas as pd
 import altair as alt
@@ -12,6 +13,13 @@ classifier = pipeline("zero-shot-classification", model=model, tokenizer=tokeniz
 
 # Define labels for sentiment analysis
 labels = ["positive", "neutral", "negative"]
+
+# Function to make predictions
+def predict_proba(texts):
+    inputs = tokenizer(texts, return_tensors='pt', padding=True, truncation=True)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    return torch.nn.functional.softmax(outputs.logits, dim=1).numpy()
 
 # Set up Streamlit app
 st.title("Advanced Sentiment Analysis Tool")
@@ -62,6 +70,12 @@ if st.button("Analyze"):
             )
             st.altair_chart(chart)
 
+            # Explain the result using SHAP
+            explainer = shap.Explainer(predict_proba, tokenizer)
+            shap_values = explainer([user_input], check_additivity=False)
+            st.write("Explanation:")
+            shap_text = shap.plots.text(shap_values[0])
+            st.pyplot(shap_text)
+
         except Exception as e:
             st.write(f"Error: {e}")
-
