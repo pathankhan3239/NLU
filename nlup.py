@@ -1,6 +1,8 @@
 import streamlit as st
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 import torch
+import pandas as pd
+import altair as alt
 
 # Load pre-trained sentiment analysis model and tokenizer
 model_name = "roberta-large-mnli"
@@ -12,8 +14,12 @@ classifier = pipeline("zero-shot-classification", model=model, tokenizer=tokeniz
 labels = ["positive", "neutral", "negative"]
 
 # Set up Streamlit app
-st.title("Efficient Sentiment Analysis Tool")
+st.title("Advanced Sentiment Analysis Tool")
 user_input = st.text_area("Enter a review:")
+
+# Store the history of inputs and their predictions
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
 
 if st.button("Analyze"):
     # Check if input is not empty
@@ -23,6 +29,39 @@ if st.button("Analyze"):
         try:
             # Get sentiment analysis result
             prediction = classifier(user_input, candidate_labels=labels)
-            st.write(f"Label: {prediction['labels'][0]}, Score: {prediction['scores'][0]:.4f}")
+            st.write(f"**Label:** {prediction['labels'][0]}, **Score:** {prediction['scores'][0]:.4f}")
+
+            # Show detailed probabilities for all labels
+            st.write("**Detailed Scores:**")
+            scores_df = pd.DataFrame({
+                "Label": prediction['labels'],
+                "Score": prediction['scores']
+            })
+            st.write(scores_df)
+
+            # Store the input and prediction in history
+            st.session_state['history'].append({
+                "Input": user_input,
+                "Prediction": prediction['labels'][0],
+                "Scores": prediction['scores']
+            })
+
+            # Display the history
+            st.write("### History")
+            history_df = pd.DataFrame(st.session_state['history'])
+            st.write(history_df)
+
+            # Visualization: Bar chart of the sentiment scores
+            st.write("### Sentiment Score Visualization")
+            chart = alt.Chart(scores_df).mark_bar().encode(
+                x='Label',
+                y='Score',
+                color='Label'
+            ).properties(
+                width=alt.Step(80)  # controls the width of the bars
+            )
+            st.altair_chart(chart)
+
         except Exception as e:
             st.write(f"Error: {e}")
+
