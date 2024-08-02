@@ -6,16 +6,10 @@ import torch
 model_name = "roberta-large-mnli"
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-classifier = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+classifier = pipeline("zero-shot-classification", model=model, tokenizer=tokenizer)
 
-# Function to make predictions
-def predict_sentiment(text):
-    # Tokenize and prepare tensors
-    inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    probs = torch.nn.functional.softmax(outputs.logits, dim=1)
-    return probs
+# Define labels for sentiment analysis
+labels = ["positive", "neutral", "negative"]
 
 # Set up Streamlit app
 st.title("Efficient Sentiment Analysis Tool")
@@ -28,7 +22,7 @@ if st.button("Analyze"):
     else:
         try:
             # Get sentiment analysis result
-            prediction = classifier(user_input)[0]
-            st.write(f"Sentiment: {prediction['label']}, Score: {prediction['score']:.4f}")
+            prediction = classifier(user_input, candidate_labels=labels)
+            st.write(f"Label: {prediction['labels'][0]}, Score: {prediction['scores'][0]:.4f}")
         except Exception as e:
             st.write(f"Error: {e}")
