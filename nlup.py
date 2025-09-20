@@ -82,4 +82,13 @@ if st.button("Analyze"):
                 explainer = shap.Explainer(predict_proba, masker)
                 shap_values = explainer([user_input])
 
-                st.write("Explanation: Words influencing the sentiment predict
+                st.write("Explanation: Words influencing the sentiment prediction")
+                shap.initjs()
+                st_shap_plot = shap.plots.text(shap_values[0])
+                st.pyplot(st_shap_plot.figure)
+
+            except Exception as shap_error:
+                st.warning("⚠️ SHAP explanation could not be generated. It may be due to limited resources.")
+
+        except Exception as e:
+            st.error(f"❌ An error occurred: {e}")
